@@ -8,20 +8,16 @@ library(readxl)
 library(writexl)
 library(stringi)
 
+
 current_directory <- getwd()
-python_folder_path <- file.path(current_directory,'routes','Model','Python file for Cartofact data extracting')
+python_folder_path <- file.path(current_directory,'Model','Python file for Cartofact data extracting')
 python_code_normalized_path <- normalizePath(python_folder_path)
-setwd(python_code_normalized_path)
-#print(python_code_normalized_path)
-#setwd("/Users/anusa/Desktop/api/routes/Model/Python file for Cartofact data extracting")
-
-
-
+setwd(python_code_normalized_path)   #Change the path to where the files are saved
 
 ###Obtain attributes from CARTOFACT.com using Python
-python_path <- file.path(current_directory,'routes','Model','Python', 'Python312')
-use_python(python_path)
-
+python_path <- file.path(current_directory,'Model','Python', 'Python312')
+python_code_normalized_path <- normalizePath(python_path)
+use_python(python_code_normalized_path)
 
 #Select the attributes
 attribute <- c('licence','uwi_formatted',
@@ -37,24 +33,20 @@ attribute <- c('licence','uwi_formatted',
                'prod_mr3_oil_bbld')
 table <- c('live_well_ab')
 at_table <- as.data.frame(cbind(attribute,table))
-attable_path <- file.path(current_directory,'routes','Model','Python file for Cartofact data extracting', "at_table.xlsx")
-attable_file_normalized_path <- normalizePath(attable_path)
-write_xlsx(at_table, attable_file_normalized_path)
+at_table_path <- file.path(current_directory,'Model','Python file for Cartofact data extracting','at_table.xlsx')
+at_table_normalized_path <- normalizePath(at_table_path)
+write_xlsx(at_table,at_table_normalized_path)
 
 
 
 #Obtain the attributes
 library(reticulate)
 
-
-
 # Specify the path to your Python file with spaces, escaping the spaces with a backslash
-python_extracting_cartofact_path <- file.path(python_folder_path,'extracting cartofact attributes.py')
-extracting_cartofact_normalized_path <- normalizePath(python_extracting_cartofact_path)
-py_run_file(extracting_cartofact_normalized_path)
-
-
-attribute_df_path <- file.path(python_folder_path, 'attribute_df.csv')
+cartofact_data_extracting_path <- file.path(current_directory,'Model','Python file for Cartofact data extracting','extracting cartofact attributes.py')
+cartofact_data_extracting_normalized_path <- normalizePath(cartofact_data_extracting_path)
+py_run_file(cartofact_data_extracting_normalized_path)
+attribute_df_path <- file.path(current_directory,'Model','Python file for Cartofact data extracting','attribute_df.csv')
 attribute_df_normalized_path <- normalizePath(attribute_df_path)
 testdata <- read.csv(attribute_df_normalized_path)
 
@@ -62,21 +54,18 @@ testdata <- read.csv(attribute_df_normalized_path)
 search_id <- c('field_name')
 id <- unique(testdata$field_name)
 id <- data.frame(id = id)
-
-id_file_path <- file.path(python_folder_path,'id.xlsx')
-id_file_normalized_path <- normalizePath(id_file_path)
-write_xlsx(id,id_file_normalized_path)
+id_path <- file.path(current_directory,'Model','Python file for Cartofact data extracting','id.xlsx')
+id_normalized_path <- normalizePath(id_path)
+write_xlsx(id,id_normalized_path)
 
 attribute <- c('field_name','oil_in_place_e3m3')
 table <- c('live_well_ab_st98_field_oil_reserve')
 at_table <- as.data.frame(cbind(attribute,table,search_id))
-
-
-write_xlsx(at_table,attable_file_normalized_path)
-python_extracting_other_table_path <- file.path(python_folder_path,'extracting attributes other table.py')
-python_extracting_other_table_normalized_path <- normalizePath(python_extracting_other_table_path)
-py_run_file(python_extracting_other_table_normalized_path)
-attribute_ot_path <- file.path(python_folder_path,'attribute_ot.csv')
+write_xlsx(at_table,at_table_normalized_path)
+attributes_other_table_path <- file.path(current_directory,'Model','Python file for Cartofact data extracting','extracting attributes other table.py')
+attributes_other_table_normalized_path <- normalizePath(attributes_other_table_path)
+py_run_file(attributes_other_table_normalized_path)
+attribute_ot_path <- file.path(current_directory,'Model','Python file for Cartofact data extracting','attribute_ot.csv')
 attribute_ot_normalized_path <- normalizePath(attribute_ot_path)
 oilinplace <- read.csv(attribute_ot_normalized_path)
 testdata <- merge(testdata,oilinplace,by = 'field_name',all.x = TRUE)
@@ -86,16 +75,9 @@ testdata <- merge(testdata,oilinplace,by = 'field_name',all.x = TRUE)
 search_id <- c('uwi_formatted')
 id <- unique(testdata$uwi_formatted)
 id <- data.frame(id = id)
-write_xlsx(id,id_file_normalized_path)
+write_xlsx(id,id_normalized_path)
 
-attribute <- c('uwi_formatted','casing_size','casing_code')
-table <- c('live_well_ab_casing')
-at_table <- as.data.frame(cbind(attribute,table,search_id))
-write_xlsx(at_table,attable_file_normalized_path)
-py_run_file(python_extracting_other_table_normalized_path)
-casing <- read.csv(attribute_ot_normalized_path)
-casing <- subset(casing, casing_code == 'SURFACE')
-testdata <- merge(testdata, casing, by = 'uwi_formatted', all.x = TRUE)
+ 
 
 
 
@@ -364,10 +346,13 @@ colnames(logcate_test2) <- c("LLR.Abandonment.Area","Well.Type.Final")
 ###################################Phase1 Prediction###########################
 #For this part run directly to line 598, then read the commment
 #load data
-excel_folder_path <- file.path(current_directory,'routes','Model','excel data files for R code models')
+excel_folder_path <- file.path(current_directory,'Model','excel data files for R code models')
 excel_folder_normalized_path <- normalizePath(excel_folder_path)
 setwd(excel_folder_normalized_path)
-Data=read.csv("Environmental Data Collection V1_Jul6_clean.csv", as.is=TRUE, header=TRUE)
+
+environmental_data_path <- file.path(current_directory,'Model','excel data files for R code models','Environmental Data Collection V1_Jul6_clean.csv')
+environmental_data_normalized_path <- normalizePath(environmental_data_path)
+Data=read.csv(environmental_data_normalized_path, as.is=TRUE, header=TRUE)
 Data <- as.data.frame(Data)
 Sample=read.csv("Phase1 Attributes_MAIN.csv",as.is=TRUE, header=TRUE)
 Sample0=read.csv("Phase1 Attributes_MAIN.csv",as.is=TRUE, header=TRUE)
@@ -832,7 +817,7 @@ pred.rf<-predict(rf.well.ph1, newdata=logdata)
 # pred.rf<-predict(rf.well, newdata=logdata, type="prob") # if user is caring about the probabilities 
 tab=table(pred.rf,logdata$y)
 
-randomForest:::varImpPlot(rf.well.ph1)
+#randomForest:::varImpPlot(rf.well.ph1)
 
 
 
@@ -843,32 +828,32 @@ logdata_test11<-logdata_test11[-1,]
 ph1_prob <- predict(rf.well.ph1, newdata=logdata_test11, type="prob")
 
 
-###### No need to run the following chunk if accuracy is not needed, directly go to Phase2 prediction 
-Accuracy_R<-function(ind){
-  Train=logdata[-ind,]
-  Test=logdata[ind,]
-  rf.well<-randomForest(y~., data=Train, mtry=3, ntree=800, importance=TRUE)
-  pred.rf<-predict(rf.well, newdata=Test)
-  tab=table(pred.rf,Test$y)
-  return((tab[1,1]+tab[2,2])/sum(tab))
-}
-library(caret)
-a=matrix(c(0,0,0,0),nrow = 2)
-for (i in 1:50) {
-  set.seed(i)
-  folds<-createFolds(factor(logdata$y), 4)
-  temp=lapply(folds, Accuracy_R)
-  ind=folds[[which.max(temp)]]
-  Train<-logdata[-ind,]
-  Test<-logdata[ind,]
-  rf.well<-randomForest(y~., data=Train, mtry=3, ntree=800, importance=TRUE)
-  pred.rf<-predict(rf.well, newdata=Test)
-  tab=table(pred.rf,Test$y)
-  a=a+as.matrix(prop.table(tab))
-}
-
-(a[1,1]+a[2,2])/50
-######
+# ###### No need to run the following chunk if accuracy is not needed, directly go to Phase2 prediction 
+# Accuracy_R<-function(ind){
+#   Train=logdata[-ind,]
+#   Test=logdata[ind,]
+#   rf.well<-randomForest(y~., data=Train, mtry=3, ntree=800, importance=TRUE)
+#   pred.rf<-predict(rf.well, newdata=Test)
+#   tab=table(pred.rf,Test$y)
+#   return((tab[1,1]+tab[2,2])/sum(tab))
+# }
+# 
+# a=matrix(c(0,0,0,0),nrow = 2)
+# for (i in 1:50) {
+#   set.seed(i)
+#   folds<-createFolds(factor(logdata$y), 4)
+#   temp=lapply(folds, Accuracy_R)
+#   ind=folds[[which.max(temp)]]
+#   Train<-logdata[-ind,]
+#   Test<-logdata[ind,]
+#   rf.well<-randomForest(y~., data=Train, mtry=3, ntree=800, importance=TRUE)
+#   pred.rf<-predict(rf.well, newdata=Test)
+#   tab=table(pred.rf,Test$y)
+#   a=a+as.matrix(prop.table(tab))
+# }
+# 
+# (a[1,1]+a[2,2])/50
+# ######
 
 
 
@@ -904,9 +889,8 @@ for (i in 1:50) {
 ###################################Phase2 Prediction###########################
 #For this part run directly to line 1112, then read the commment
 #load data
-#setwd("/Users/qianhuang/Desktop/360/model/model ph2 vs well center ")
 setwd(excel_folder_normalized_path)
-Data=read.csv("Environmental Data Collection V1_Jul6_clean.csv", as.is=TRUE, header=TRUE)
+Data=read.csv(environmental_data_normalized_path, as.is=TRUE, header=TRUE)
 Data <- as.data.frame(Data)
 Sample=read.csv("DDP1 Dataset at Aug 10_MAIN.csv",as.is=TRUE, header=TRUE)
 Sample0=read.csv("DDP1 Dataset at Aug 10_MAIN.csv",as.is=TRUE, header=TRUE)
@@ -1317,9 +1301,9 @@ if (1.25*length(which(logdata$y==1))<length(which(logdata$y==0))){
 
 
 
-###### Please Note if Accuracy isn't Needed, do not run the following line. Directly go to "random forest"
-logdata_logistic<-subset(logdata,(LLR.Abandonment.Area!="High Level"))#remove subset with fewer data points,check the well type subset when have it
-######
+# ###### Please Note if Accuracy isn't Needed, do not run the following line. Directly go to "random forest"
+# logdata_logistic<-subset(logdata,(LLR.Abandonment.Area!="High Level"))#remove subset with fewer data points,check the well type subset when have it
+# ######
 
 
 
@@ -1350,33 +1334,33 @@ logdata_test22<-logdata_test22[-1,]
 ph2_prob<-predict(rf.well.ph2, newdata=logdata_test22, type="prob")
 
 
-###### No need to run the following chunk if accuracy is not needed, directly go to Phase2 prediction 
-Accuracy_R<-function(ind){
-  Train=logdata[-ind,]
-  Test=logdata[ind,]
-  rf.well<-randomForest(y~., data=Train, mtry=3, ntree=800, importance=TRUE)
-  pred.rf<-predict(rf.well, newdata=Test)
-  tab=table(pred.rf,Test$y)
-  return((tab[1,1]+tab[2,2])/sum(tab))
-}
-
-a=matrix(c(0,0,0,0),nrow = 2)
-for (i in 1:50) {
-  set.seed(i)
-  folds<-createFolds(factor(logdata$y), 4)
-  temp=lapply(folds, Accuracy_R)
-  ind=folds[[which.max(temp)]]
-  Train<-logdata[-ind,]
-  Test<-logdata[ind,]
-  rf.well<-randomForest(y~., data=Train, mtry=3, ntree=800, importance=TRUE)
-  pred.rf<-predict(rf.well, newdata=Test)
-  tab=table(pred.rf,Test$y)
-  a=a+as.matrix(prop.table(tab))
-}
-
-accuracy_rf=(a[1,1]+a[2,2])/50
-accuracy_rf
-######
+# ###### No need to run the following chunk if accuracy is not needed, directly go to Phase2 prediction 
+# Accuracy_R<-function(ind){
+#   Train=logdata[-ind,]
+#   Test=logdata[ind,]
+#   rf.well<-randomForest(y~., data=Train, mtry=3, ntree=800, importance=TRUE)
+#   pred.rf<-predict(rf.well, newdata=Test)
+#   tab=table(pred.rf,Test$y)
+#   return((tab[1,1]+tab[2,2])/sum(tab))
+# }
+# 
+# a=matrix(c(0,0,0,0),nrow = 2)
+# for (i in 1:50) {
+#   set.seed(i)
+#   folds<-createFolds(factor(logdata$y), 4)
+#   temp=lapply(folds, Accuracy_R)
+#   ind=folds[[which.max(temp)]]
+#   Train<-logdata[-ind,]
+#   Test<-logdata[ind,]
+#   rf.well<-randomForest(y~., data=Train, mtry=3, ntree=800, importance=TRUE)
+#   pred.rf<-predict(rf.well, newdata=Test)
+#   tab=table(pred.rf,Test$y)
+#   a=a+as.matrix(prop.table(tab))
+# }
+# 
+# accuracy_rf=(a[1,1]+a[2,2])/50
+# accuracy_rf
+# ######
 
 
 
@@ -1421,7 +1405,7 @@ accuracy_rf
 # For this chunk, run to the end
 #load data
 setwd(excel_folder_normalized_path)
-Data=read.csv("Environmental Data Collection V1_Jul6_clean.csv", as.is=TRUE, header=TRUE)
+Data=read.csv(environmental_data_normalized_path, as.is=TRUE, header=TRUE)
 Data <- as.data.frame(Data)
 Sample=read.csv("DDP1 Dataset at Aug 10_MAIN.csv",as.is=TRUE, header=TRUE)
 Sample <- as.data.frame(Sample)
@@ -1936,8 +1920,7 @@ Pred_RV2 <- cbind(testdata$Licence, pred.normal1, pred.gamma1, pred.gamma2, pred
 Pred_RV2 <- as.data.frame(Pred_RV2)
 colnames(Pred_RV2)=c("Licence", "Remediated Volume (Normal)","Remediated Volume (Gamma1)",
                      "Remediated Volume (Gamma2)","Remediated Volume (InversGaussian)")
-# Pred_RV1 <- read.csv("results.csv")
-# Pred_RV2 <- read.csv("results2.csv")
+
 
 
 
@@ -1946,68 +1929,6 @@ colnames(Pred_RV2)=c("Licence", "Remediated Volume (Normal)","Remediated Volume 
 #ph1 ph2
 pred_result <- as.data.frame(cbind(testdata$Licence,ph1_prob[,2],ph2_prob[,2]))
 colnames(pred_result)=c("Licence","ph1_pass_prob", "ph2_pass_prob")
+Final_result<-cbind(pred_result,Pred_RV2[,2:5])
+write.csv(Final_result, file = "Final_result.csv", row.names = FALSE)
 
-setwd("/Users/qianhuang/Desktop/360/model/test data")
-fullresults=read.csv("results.csv",as.is=TRUE, header=TRUE)
-
-fullresults['ph1_pass_prob'] <- NA
-fullresults['ph2_pass_prob'] <- NA
-
-for(i in 1:dim(pred_result)[1]){
-  loc = which(pred_result$Licence[i]==fullresults$Licence)
-  fullresults$ph1_pass_prob[loc]=pred_result$ph1_pass_prob[i]
-  fullresults$ph2_pass_prob[loc]=pred_result$ph2_pass_prob[i]
-}
-
-write.csv(fullresults,"Remediated Volume Prediction ph1ph2results.csv",row.names = FALSE)
-fullresults <- read.csv("Remediated Volume Prediction ph1ph2results.csv", as.is=TRUE, header=TRUE)
-
-pred_result2 <- as.data.frame(cbind(testdata$Licence,ph1_prob[,2],ph2_prob[,2]))
-colnames(pred_result2)=c("Licence","ph1_pass_prob", "ph2_pass_prob")
-
-for(i in 1:dim(pred_result2)[1]){
-  loc = which(pred_result2$Licence[i]==fullresults$Licence)
-  if(is.na(fullresults$ph1_pass_prob[loc])){
-    fullresults$ph1_pass_prob[loc]=pred_result2$ph1_pass_prob[i]
-  }
-  if(is.na(fullresults$ph2_pass_prob[loc])){
-    fullresults$ph2_pass_prob[loc]=pred_result2$ph2_pass_prob[i]
-  }
-}
-
-
-
-
-#remediated volume
-fullresults=read.csv("Remediation Volume Prediction.csv",as.is=TRUE, header=TRUE)
-
-fullresults['normal'] <- NA
-fullresults['gamma1'] <- NA
-fullresults['gamma2'] <- NA
-fullresults['inversegaussian'] <- NA
-for(i in 1:dim(Pred_RV2)[1]){
-  loc = which(Pred_RV2$Licence[i]==fullresults$Licence)
-  fullresults$normal[loc]=Pred_RV2$`Remediated Volume (Normal)`[i]
-  fullresults$gamma1[loc]=Pred_RV2$`Remediated Volume (Gamma1)`[i]
-  fullresults$gamma2[loc]=Pred_RV2$`Remediated Volume (Gamma2)`[i]
-  fullresults$inversegaussian[loc]=Pred_RV2$`Remediated Volume (InversGaussian)`[i]
-}
-
-for(i in 1:dim(Pred_RV1)[1]){
-  loc = which(Pred_RV1$Licence[i]==fullresults$Licence)
-  if(!(is.na(Pred_RV1$pred_normal[i]))){
-    fullresults$pred_normal[loc]=Pred_RV1$pred_normal[i]
-  }
-  if(!(is.na(Pred_RV1$pred_gamma[i]))){
-    fullresults$pred_gamma[loc]=Pred_RV1$pred_gamma[i]
-  }
-}
-
-write.csv(fullresults,"Master Wells_ARC_Q3_Rem Licences.csv",row.names = FALSE)
-
-
-
-Pred_result<-cbind(testdata$UWI,ph1_prob[,2], ph2_prob[,2], pred.normal1, pred.gamma2)
-
-colnames(fullresults)=c("UWI","Phase 1 Pass Probability", "Phase 2 Pass Probability", "Predicted Remediation Vol (Gaussian identity-link)", 
-                        "Predicted Remediation Vol (Gamma inv-link)")

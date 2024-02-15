@@ -8,34 +8,94 @@ library(readxl)
 library(writexl)
 library(stringi)
 
-setwd("/Users/qianhuang/Desktop/360/model/extracting attributes")   #Change the path to where the files are saved
+current_directory <- getwd()
+python_folder_path <- file.path(current_directory,'routes','Model','Python file for Cartofact data extracting')
+python_code_normalized_path <- normalizePath(python_folder_path)
+setwd(python_code_normalized_path)
+#print(python_code_normalized_path)
+#setwd("/Users/anusa/Desktop/api/routes/Model/Python file for Cartofact data extracting")
+
+
 
 
 ###Obtain attributes from CARTOFACT.com using Python
-use_python("/opt/homebrew/bin/python3")
+python_path <- file.path(current_directory,'routes','Model','Python', 'Python312')
+use_python(python_path)
 
-attribute <- c('licence','uwi_formatted','geom',
+
+#Select the attributes
+attribute <- c('licence','uwi_formatted',
                'spud_date','cumulative_oil_production_m3',
                'cumulative_gas_production_e3m3','cumulative_water_production_m3',
-               'cumulative_condensate_production_bbl','completion_interval_bottom_mkb',
+               'cumulative_condensate_production_bbl','completion_interval_bottom',
                'prod_ip3_oil_bbld','prod_ip3_gas_mcfd',
                'ground_elevation','status_full',
-               'well_abandoned_date',
-               'true_vertical_depth','measured_depth',
-               'last_production_date',
+               'llr_abandonment_area_name','surf_aband_date',
+               'tv_depth','well_total_depth',
+               'field_name','last_production_date',
                'prod_ip3_boe_boed','prod_mr3_wtr_bbld',
                'prod_mr3_oil_bbld')
-table <- c('live_well_sk')
+table <- c('live_well_ab')
 at_table <- as.data.frame(cbind(attribute,table))
-write_xlsx(at_table,"/Users/qianhuang/Desktop/360/model/extracting attributes/at_table.xlsx")
+attable_path <- file.path(current_directory,'routes','Model','Python file for Cartofact data extracting', "at_table.xlsx")
+attable_file_normalized_path <- normalizePath(attable_path)
+write_xlsx(at_table, attable_file_normalized_path)
+
 
 
 #Obtain the attributes
 library(reticulate)
 
+
+
 # Specify the path to your Python file with spaces, escaping the spaces with a backslash
-py_run_file("/Users/qianhuang/Desktop/360/model/extracting attributes/extracting cartofact attributes sk.py")
-testdata <- read.csv("/Users/qianhuang/Desktop/360/model/extracting attributes/attribute_df.csv")
+python_extracting_cartofact_path <- file.path(python_folder_path,'extracting cartofact attributes.py')
+extracting_cartofact_normalized_path <- normalizePath(python_extracting_cartofact_path)
+py_run_file(extracting_cartofact_normalized_path)
+
+
+attribute_df_path <- file.path(python_folder_path, 'attribute_df.csv')
+attribute_df_normalized_path <- normalizePath(attribute_df_path)
+testdata <- read.csv(attribute_df_normalized_path)
+
+# obtain attribute 'oil_in_place'
+search_id <- c('field_name')
+id <- unique(testdata$field_name)
+id <- data.frame(id = id)
+
+id_file_path <- file.path(python_folder_path,'id.xlsx')
+id_file_normalized_path <- normalizePath(id_file_path)
+write_xlsx(id,id_file_normalized_path)
+
+attribute <- c('field_name','oil_in_place_e3m3')
+table <- c('live_well_ab_st98_field_oil_reserve')
+at_table <- as.data.frame(cbind(attribute,table,search_id))
+
+
+write_xlsx(at_table,attable_file_normalized_path)
+python_extracting_other_table_path <- file.path(python_folder_path,'extracting attributes other table.py')
+python_extracting_other_table_normalized_path <- normalizePath(python_extracting_other_table_path)
+py_run_file(python_extracting_other_table_normalized_path)
+attribute_ot_path <- file.path(python_folder_path,'attribute_ot.csv')
+attribute_ot_normalized_path <- normalizePath(attribute_ot_path)
+oilinplace <- read.csv(attribute_ot_normalized_path)
+testdata <- merge(testdata,oilinplace,by = 'field_name',all.x = TRUE)
+
+
+#Table "well_ab_casing" ('Casing' only taken value of "SURFACE")
+search_id <- c('uwi_formatted')
+id <- unique(testdata$uwi_formatted)
+id <- data.frame(id = id)
+write_xlsx(id,id_file_normalized_path)
+
+attribute <- c('uwi_formatted','casing_size','casing_code')
+table <- c('live_well_ab_casing')
+at_table <- as.data.frame(cbind(attribute,table,search_id))
+write_xlsx(at_table,attable_file_normalized_path)
+py_run_file(python_extracting_other_table_normalized_path)
+casing <- read.csv(attribute_ot_normalized_path)
+casing <- subset(casing, casing_code == 'SURFACE')
+testdata <- merge(testdata, casing, by = 'uwi_formatted', all.x = TRUE)
 
 
 
@@ -52,26 +112,23 @@ colnames(testdata)[colnames(testdata) == "prod_ip3_oil_bbld"] <- "Initial.3Mth.P
 colnames(testdata)[colnames(testdata) == "prod_ip3_gas_mcfd"] <- "Initial.3Mth.Prod..Gas..Mcf.d."
 colnames(testdata)[colnames(testdata) == "ground_elevation"] <- "Ground.Elevation..m.above.sea.level."
 colnames(testdata)[colnames(testdata) == "status_full"] <- "Full.Status"
+colnames(testdata)[colnames(testdata) == "llr_abandonment_area_name"] <- "LLR.Abandonment.Area"
 colnames(testdata)[colnames(testdata) == "surf_aband_date"] <- "Surface.Aband..Date"
-colnames(testdata)[colnames(testdata) == "true_vertical_depth"] <- "True.Vertical.Depth..m.TVD."
-colnames(testdata)[colnames(testdata) == "measured_depth"] <- "Total.Well.Depth..mKB."
+colnames(testdata)[colnames(testdata) == "tv_depth"] <- "True.Vertical.Depth..m.TVD."
+colnames(testdata)[colnames(testdata) == "well_total_depth"] <- "Total.Well.Depth..mKB."
 colnames(testdata)[colnames(testdata) == "oil_in_place_e3m3"] <- "Oil.In.Place..e3m3."
 colnames(testdata)[colnames(testdata) == "last_production_date"] <- "Last.Production.Date"
 colnames(testdata)[colnames(testdata) == "prod_ip3_boe_boed"] <- "Initial.3Mth.Prod..BOE..BOE.d."
 colnames(testdata)[colnames(testdata) == "prod_mr3_wtr_bbld"] <- "Last.3Mth.Prod..Water..BBL.d."
 colnames(testdata)[colnames(testdata) == "prod_mr3_oil_bbld"] <- "Last.3Mth.Prod..Oil..BBL.d."
-
-
+colnames(testdata)[colnames(testdata) == "casing_code"] <- "Casing"
+colnames(testdata)[colnames(testdata) == "casing_size"] <- "Outside.Diameter..mm."
 
 
 lics <- testdata$Licence
 uwis <- testdata$UWI
 
-
-
-
-
-### Add "Well.Type.Final" attributes
+# Add "Well.Type.Final" attributes
 testdata['Well.Type.Final'] <- NA
 for (i in 1:dim(testdata)[1]){
   if (grepl("Oil", testdata$Full.Status[i])){
@@ -106,6 +163,9 @@ for (i in 1:dim(testdata)[1]){
 
 
 
+
+
+
 ###
 licence <- unique(testdata$Licence)
 tab <- table(testdata$Licence)
@@ -115,7 +175,6 @@ loc <- names(loc)
 nonrep <- testdata[!testdata$Licence %in% loc,]
 
 #Build sub data frame of well with UWIs >= 2, name it repuwi
-#Un-comment the "Well.Type.Final" if the data have this attributes
 #For any attributes that are not applicable in CARTOFACT, comment the corresponding line in following loop.
 repuwi=data.frame()
 for (i in 1:length(loc)){       
@@ -145,30 +204,32 @@ for (i in 1:length(loc)){
     a$Well.Type.Final = "did not produce"
   }
   a$Spud.Date=min(b$Spud.Date,na.rm = TRUE)
+  a$Completion.Bottom..mKB. = max(b$Completion.Bottom..mKB.,na.rm = TRUE)
   a$Cum..Water.Production..m3. = sum(b$Cum..Water.Production..m3.,na.rm=TRUE)
   a$Cum..Oil.Production..m3. = sum(b$Cum..Oil.Production..m3.,na.rm=TRUE)
   a$Cum..Gas.Production..e3m3. = sum(b$Cum..Gas.Production..e3m3.,na.rm=TRUE)
   a$Cum..Condensate.Production..bbl. = sum(b$Cum..Condensate.Production..bbl.,na.rm=TRUE)
-  a$Initial.3Mth.Prod..Oil..BBL.d. = sum(b$Initial.3Mth.Prod..Oil..BBL.d.,na.rm=TRUE)
   a$Initial.3Mth.Prod..Gas..Mcf.d. = sum(b$Initial.3Mth.Prod..Gas..Mcf.d.,na.rm=TRUE)
+  a$Initial.3Mth.Prod..Oil..BBL.d. = sum(b$Initial.3Mth.Prod..Oil..BBL.d.,na.rm=TRUE)
+  a$Ground.Elevation..m.above.sea.level. = max(b$Ground.Elevation..m.above.sea.level.,na.rm=TRUE)
+  a$Initial.3Mth.Prod..BOE..BOE.d. = sum(b$Initial.3Mth.Prod..BOE..BOE.d.,na.rm=TRUE)
   a$Last.3Mth.Prod..Oil..BBL.d. = sum(b$Last.3Mth.Prod..Oil..BBL.d.,na.rm=TRUE)
   a$Last.3Mth.Prod..Water..BBL.d. = sum(b$Last.3Mth.Prod..Water..BBL.d.,na.rm=TRUE)
-  a$Initial.3Mth.Prod..BOE..BOE.d. = sum(b$Initial.3Mth.Prod..BOE..BOE.d.,na.rm=TRUE)
   
   repuwi=rbind(repuwi,a)
 }
 
-#combine nonrep and repuwi to testdata
+#combine nonrep and repuwi to Sample
 testdata=rbind(repuwi, nonrep)
 testdata[testdata==-Inf] <- NA
 testdata[testdata==Inf] <- NA
 
 #replace NA with 0 for part of attributes
-prod=c("Cum..Gas.Production..e3m3.","Cum..Condensate.Production..bbl.",
-       "Cum..Oil.Production..m3.","Cum..Water.Production..m3.",
-       "Last.3Mth.Prod..Oil..BBL.d.","Last.3Mth.Prod..Water..BBL.d.",
-       "Initial.3Mth.Prod..BOE..BOE.d.","Initial.3Mth.Prod..Oil..BBL.d.",
-       "Initial.3Mth.Prod..Gas..Mcf.d.")#If any attributes not applicable in CARTOFACT for the data, delete it here.
+prod=c("Cum..Oil.Production..m3.","Cum..Water.Production..m3.",
+       "Cum..Gas.Production..e3m3.","Cum..Condensate.Production..bbl.",
+       "Initial.3Mth.Prod..Gas..Mcf.d.","Initial.3Mth.Prod..Oil..BBL.d.",
+       "Initial.3Mth.Prod..BOE..BOE.d.","Last.3Mth.Prod..Oil..BBL.d.",
+       "Last.3Mth.Prod..Water..BBL.d.")#If any attributes not applicable in CARTOFACT for the data, delete it here.
 for (i in 1:length(prod)){
   testdata[prod[i]][is.na(testdata[prod[i]])] <- 0
 }
@@ -179,24 +240,22 @@ uwis <- testdata$UWI
 
 
 ################ select variables for the model
-cate<-as.data.frame(testdata[,c("Well.Type.Final")]) # Add "LLR",Well.Type.Final" when it becomes available
-names(cate)[1] <- "Well.Type.Final"
-
+cate<-testdata[,c("LLR.Abandonment.Area","Well.Type.Final")]
 
 for (i in 1:length(cate)) {
   cate[,i]=as.factor(cate[,i]);
 }
 
-date <- testdata[,c("Spud.Date","Last.Production.Date")] 
-date <- mutate_all(date, function(x) as.numeric(as.character(x)))
-
-nume <- testdata[,c("Total.Well.Depth..mKB.","True.Vertical.Depth..m.TVD.",
-                    "Cum..Water.Production..m3.","Cum..Condensate.Production..bbl.",
-                    "Cum..Oil.Production..m3.","Cum..Gas.Production..e3m3.",
-                    "Last.3Mth.Prod..Oil..BBL.d.","Initial.3Mth.Prod..Oil..BBL.d.",
-                    "Last.3Mth.Prod..Water..BBL.d.","Initial.3Mth.Prod..BOE..BOE.d.",
-                    "Initial.3Mth.Prod..Gas..Mcf.d.")]
-
+nume <- testdata[,c("Spud.Date","Last.Production.Date",
+                    "Cum..Gas.Production..e3m3.","Cum..Water.Production..m3.",
+                    "Cum..Oil.Production..m3.","Cum..Condensate.Production..bbl.",
+                    "Completion.Bottom..mKB.","True.Vertical.Depth..m.TVD.",
+                    "Total.Well.Depth..mKB.",
+                    "Ground.Elevation..m.above.sea.level.",
+                    "Initial.3Mth.Prod..Gas..Mcf.d.","Initial.3Mth.Prod..Oil..BBL.d.",
+                    "Ground.Elevation..m.above.sea.level.","Oil.In.Place..e3m3.",
+                    "Initial.3Mth.Prod..BOE..BOE.d.","Last.3Mth.Prod..Water..BBL.d.",
+                    "Last.3Mth.Prod..Oil..BBL.d.")]
 
 # combine True.Vertical.Depth and Total.Well.Depth
 nume$True.Vertical.Depth..m.TVD.[is.na(nume$True.Vertical.Depth..m.TVD.)] <- 0
@@ -207,7 +266,6 @@ for (i in 1:dim(nume)[1]) {
 }
 nume$Total.Well.Depth..mKB.=c()
 
-nume <- cbind(date,nume)
 
 
 #Full version of attributes for phase1 and phase2
@@ -218,40 +276,51 @@ nume <- cbind(date,nume)
 #            "Cum..Water.Production..m3.","Cum..Condensate.Production..bbl.",
 #            "Outside.Diameter..mm.")# select all the numerical attributes will be used in model
 
-var_nume=c("Spud.Date","Cum..Gas.Production..e3m3.","Completion.Bottom..mKB.",
+var_nume=c("Spud.Date","Cum..Gas.Production..e3m3.",
            "Initial.3Mth.Prod..Gas..Mcf.d.","Cum..Oil.Production..m3.",
            "True.Vertical.Depth..m.TVD.","Initial.3Mth.Prod..Oil..BBL.d.",
-           "Surface.Aband..Date","Ground.Elevation..m.above.sea.level.",
+           "Ground.Elevation..m.above.sea.level.",
            "Cum..Water.Production..m3.","Cum..Condensate.Production..bbl.")# select all the numerical attributes will be used in model
 
 # #Full version of attributes for remediation volume
-# var_nume=c("Spud.Date",
+# var_nume=c("Spud.Date","Last.Production.Date",
 #            "Cum..Oil.Production..m3.","Cum..Water.Production..m3.",
 #            "Initial.3Mth.Prod..Oil..BBL.d.","Last.3Mth.Prod..Oil..BBL.d.",
 #            "Last.3Mth.Prod..Water..BBL.d.","Initial.3Mth.Prod..BOE..BOE.d.",
-#            "Outside.Diameter..mm.")
+#            "Outside.Diameter..mm.","Volume.Recovered.1",
+#            "Oil.In.Place..e3m3.")
 
 #For remediation volume
 var_nume=c("Spud.Date",
            "Cum..Oil.Production..m3.","Cum..Water.Production..m3.",
            "Initial.3Mth.Prod..Oil..BBL.d.", "Last.3Mth.Prod..Oil..BBL.d.",
-           "Last.3Mth.Prod..Water..BBL.d.","Initial.3Mth.Prod..BOE..BOE.d.")
-
-
+           "Last.3Mth.Prod..Water..BBL.d.","Initial.3Mth.Prod..BOE..BOE.d.",
+           "Oil.In.Place..e3m3.")
 
 lognume_test<-nume[,var_nume]
 
 
 
 
-logcate_test <- cate[,c("Well.Type.Final")]
+logcate_test <- cate[,c("LLR.Abandonment.Area","Well.Type.Final")]
 logcate_test <- as.data.frame(logcate_test)
-colnames(logcate_test) <- c("Well.Type.Final")
+colnames(logcate_test) <- c("LLR.Abandonment.Area","Well.Type.Final")
 
 
-logcate_test2 <- cate[,c("Well.Type.Final")]
+logcate_test2 <- cate[,c("LLR.Abandonment.Area","Well.Type.Final")] 
 logcate_test2 <- as.data.frame(logcate_test2)
-colnames(logcate_test2) <- c("Well.Type.Final")
+colnames(logcate_test2) <- c("LLR.Abandonment.Area","Well.Type.Final")
+
+# logcate_test <- cate[,c("LLR.Abandonment.Area")]
+# logcate_test <- as.data.frame(logcate_test)
+# colnames(logcate_test) <- c("LLR.Abandonment.Area")
+# 
+# 
+# logcate_test2 <- cate[,c("LLR.Abandonment.Area")] 
+# logcate_test2 <- as.data.frame(logcate_test2)
+# colnames(logcate_test2) <- c("LLR.Abandonment.Area")
+
+
 
 
 
@@ -295,7 +364,9 @@ colnames(logcate_test2) <- c("Well.Type.Final")
 ###################################Phase1 Prediction###########################
 #For this part run directly to line 598, then read the commment
 #load data
-setwd("/Users/qianhuang/Desktop/360/model/model ph2 vs well center ")
+excel_folder_path <- file.path(current_directory,'routes','Model','excel data files for R code models')
+excel_folder_normalized_path <- normalizePath(excel_folder_path)
+setwd(excel_folder_normalized_path)
 Data=read.csv("Environmental Data Collection V1_Jul6_clean.csv", as.is=TRUE, header=TRUE)
 Data <- as.data.frame(Data)
 Sample=read.csv("Phase1 Attributes_MAIN.csv",as.is=TRUE, header=TRUE)
@@ -711,9 +782,9 @@ lognume_test1 <- data_full[(lognume_r+1):dim(data_full)[1],]
 logdata_test1 <- as.data.frame(cbind(lognume_test1,logcate_test))
 
 
-logcate<-cate[,c("Well.Type.Final")] # add "Well.Type.Final" when obtain the data
+logcate<-cate[,c("LLR.Abandonment.Area","Well.Type.Final")] # add "Well.Type.Final" when obtain the data
 logcate <- as.data.frame(logcate)
-colnames(logcate) <- c("Well.Type.Final")# add "Well.Type.Final" when obtain the data
+colnames(logcate) <- c("LLR.Abandonment.Area","Well.Type.Final")# add "Well.Type.Final" when obtain the data
 
 
 logdata<-as.data.frame(cbind(lognume,y))
@@ -739,7 +810,6 @@ if (1.25*length(which(logdata$y==1))<length(which(logdata$y==0))){
   ind_sample<-sample(ind_pass, size = (length(which(logdata$y==0))-length(which(logdata$y==1))),replace=T)
   logdata<-rbind(logdata,logdata[ind_sample,])
 }
-
 
 
 
@@ -782,7 +852,7 @@ Accuracy_R<-function(ind){
   tab=table(pred.rf,Test$y)
   return((tab[1,1]+tab[2,2])/sum(tab))
 }
-
+library(caret)
 a=matrix(c(0,0,0,0),nrow = 2)
 for (i in 1:50) {
   set.seed(i)
@@ -834,7 +904,8 @@ for (i in 1:50) {
 ###################################Phase2 Prediction###########################
 #For this part run directly to line 1112, then read the commment
 #load data
-setwd("/Users/qianhuang/Desktop/360/model/model ph2 vs well center ")
+#setwd("/Users/qianhuang/Desktop/360/model/model ph2 vs well center ")
+setwd(excel_folder_normalized_path)
 Data=read.csv("Environmental Data Collection V1_Jul6_clean.csv", as.is=TRUE, header=TRUE)
 Data <- as.data.frame(Data)
 Sample=read.csv("DDP1 Dataset at Aug 10_MAIN.csv",as.is=TRUE, header=TRUE)
@@ -1213,9 +1284,9 @@ lognume <- data_full[1:lognume_r,]
 lognume_test2 <- data_full[(lognume_r+1):dim(data_full)[1],]
 logdata_test2<-as.data.frame(cbind(lognume_test2,logcate_test2))
 
-logcate<-cate[,c("Well.Type.Final")] # add "Well.Type.Final" when it becomes available in test data
+logcate<-cate[,c("LLR.Abandonment.Area","Well.Type.Final")] # add "Well.Type.Final" when it becomes available in test data
 logcate <- as.data.frame(logcate)
-colnames(logcate) <- c("Well.Type.Final")# add "Well.Type.Final" when obtain the data
+colnames(logcate) <- c("LLR.Abandonment.Area","Well.Type.Final")# add "Well.Type.Final" when obtain the data
 
 
 #logdata<-as.data.frame(cbind(lognume,y))
@@ -1243,6 +1314,7 @@ if (1.25*length(which(logdata$y==1))<length(which(logdata$y==0))){
   ind_sample<-sample(ind_pass, size = (length(which(logdata$y==0))-length(which(logdata$y==1))),replace=T)
   logdata<-rbind(logdata,logdata[ind_sample,])
 }
+
 
 
 ###### Please Note if Accuracy isn't Needed, do not run the following line. Directly go to "random forest"
@@ -1348,7 +1420,7 @@ accuracy_rf
 ################################ Remediation value prediction ###############
 # For this chunk, run to the end
 #load data
-setwd("/Users/qianhuang/Desktop/360/model/model ph2 vs well center ")
+setwd(excel_folder_normalized_path)
 Data=read.csv("Environmental Data Collection V1_Jul6_clean.csv", as.is=TRUE, header=TRUE)
 Data <- as.data.frame(Data)
 Sample=read.csv("DDP1 Dataset at Aug 10_MAIN.csv",as.is=TRUE, header=TRUE)
@@ -1745,9 +1817,9 @@ lognume_test3 <- data_full[(lognume_r+1):dim(data_full)[1],]
 logdata_test3 <- as.data.frame(cbind(lognume_test3,logcate_test))
 
 
-logcate<-cate[,c("Well.Type.Final")] 
+logcate<-cate[,c("LLR.Abandonment.Area","Well.Type.Final")] 
 logcate <- as.data.frame(logcate)
-colnames(logcate) <- c("Well.Type.Final")
+colnames(logcate) <- c("LLR.Abandonment.Area","Well.Type.Final")
 
 
 logdata<-as.data.frame(cbind(lognume,y))
@@ -1809,8 +1881,7 @@ glm.gamma2<-glm(y~Spud.Date +
                   Last.3Mth.Prod..Oil..BBL.d. + 
                   Initial.3Mth.Prod..Oil..BBL.d. +
                   Oil.In.Place..e3m3. +
-                  Last.3Mth.Prod..Water..BBL.d. +
-                  Cum..Water.Production..m3., data = logdata, family = Gamma(link="log"))
+                  Last.3Mth.Prod..Water..BBL.d., data = logdata, family = Gamma(link="log"))
 
 # Example using 'glm' with a different optimization method (bfgs)
 # glm.gamma2<-glm(y~., data = logdata, family = Gamma(link = "log"))
@@ -1865,8 +1936,8 @@ Pred_RV2 <- cbind(testdata$Licence, pred.normal1, pred.gamma1, pred.gamma2, pred
 Pred_RV2 <- as.data.frame(Pred_RV2)
 colnames(Pred_RV2)=c("Licence", "Remediated Volume (Normal)","Remediated Volume (Gamma1)",
                      "Remediated Volume (Gamma2)","Remediated Volume (InversGaussian)")
-Pred_RV1 <- read.csv("results.csv")
-Pred_RV2 <- read.csv("results2.csv")
+# Pred_RV1 <- read.csv("results.csv")
+# Pred_RV2 <- read.csv("results2.csv")
 
 
 
