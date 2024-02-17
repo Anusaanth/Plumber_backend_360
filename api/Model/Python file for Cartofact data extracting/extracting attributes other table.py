@@ -10,7 +10,6 @@ import pandas as pd
 import os
 
 
-
 ### Check connection to cartofact
 # Database connection parameters
 db_params = {
@@ -38,9 +37,9 @@ except psycopg2.Error as e:
     
 ### Obtain the attribute data from database save as "attribute_df"
 current_directory = os.getcwd()
-xlsx_file_path = os.path.join(current_directory, 'lic.xlsx')
+xlsx_file_path = os.path.join(current_directory, 'id.xlsx')
 lic=pd.read_excel(xlsx_file_path)
-lic=lic['uwi'].values.tolist() 
+lic=lic['id'].values.tolist()
 at_table_file = os.path.join(current_directory, 'at_table.xlsx')
 df=pd.read_excel(at_table_file)
 column_name = df['attribute'].tolist()

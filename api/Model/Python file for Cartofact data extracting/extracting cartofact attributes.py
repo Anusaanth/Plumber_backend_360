@@ -10,7 +10,6 @@ import pandas as pd
 import os
 
 
-
 ### Check connection to cartofact
 # Database connection parameters
 db_params = {

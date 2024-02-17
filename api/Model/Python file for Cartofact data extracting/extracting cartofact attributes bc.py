@@ -7,6 +7,7 @@ Created on Tue Dec 12 15:25:25 2023
 """
 import psycopg2
 import pandas as pd
+import os
 
 
 
@@ -36,10 +37,13 @@ except psycopg2.Error as e:
     
     
 ### Obtain the attribute data from database save as "attribute_df"
-lic=pd.read_excel("/Users/qianhuang/Desktop/360/model/extracting attributes/lic.xlsx")
+current_directory = os.getcwd()
+xlsx_file_path = os.path.join(current_directory, 'lic.xlsx')
+lic=pd.read_excel(xlsx_file_path)
 lic=lic['lic'].values.tolist()
 lic = ['{:05}'.format(x) for x in lic]
-df=pd.read_excel("/Users/qianhuang/Desktop/360/model/extracting attributes/at_table.xlsx")
+at_table_file = os.path.join(current_directory, 'at_table.xlsx')
+df=pd.read_excel(at_table_file)
 column_name = df['attribute'].tolist()
 table_name = df['table'].iloc[0]
 
@@ -62,7 +66,8 @@ try:
 
     attribute_df = pd.DataFrame(result_data, columns=column_name)
     print(attribute_df[:5])
-    attribute_df.to_csv('/Users/qianhuang/Desktop/360/model/extracting attributes/attribute_df.csv', index=False)
+    csv_file_path = os.path.join(current_directory, 'attribute_df.csv')
+    attribute_df.to_csv(csv_file_path, index=False)
 
 
 except psycopg2.Error as e:

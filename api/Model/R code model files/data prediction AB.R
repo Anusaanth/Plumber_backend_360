@@ -9,13 +9,14 @@ library(writexl)
 library(stringi)
 
 
+
 current_directory <- getwd()
-python_folder_path <- file.path(current_directory,'Model','Python file for Cartofact data extracting')
+python_folder_path <- file.path(current_directory,'api','Model','Python file for Cartofact data extracting')
 python_code_normalized_path <- normalizePath(python_folder_path)
 setwd(python_code_normalized_path)   #Change the path to where the files are saved
 
 ###Obtain attributes from CARTOFACT.com using Python
-python_path <- file.path(current_directory,'Model','Python', 'Python312')
+python_path <- file.path(current_directory,'api','Model','Python', 'Python312')
 python_code_normalized_path <- normalizePath(python_path)
 use_python(python_code_normalized_path)
 
@@ -33,7 +34,7 @@ attribute <- c('licence','uwi_formatted',
                'prod_mr3_oil_bbld')
 table <- c('live_well_ab')
 at_table <- as.data.frame(cbind(attribute,table))
-at_table_path <- file.path(current_directory,'Model','Python file for Cartofact data extracting','at_table.xlsx')
+at_table_path <- file.path(current_directory,'api','Model','Python file for Cartofact data extracting','at_table.xlsx')
 at_table_normalized_path <- normalizePath(at_table_path)
 write_xlsx(at_table,at_table_normalized_path)
 
@@ -43,10 +44,10 @@ write_xlsx(at_table,at_table_normalized_path)
 library(reticulate)
 
 # Specify the path to your Python file with spaces, escaping the spaces with a backslash
-cartofact_data_extracting_path <- file.path(current_directory,'Model','Python file for Cartofact data extracting','extracting cartofact attributes.py')
+cartofact_data_extracting_path <- file.path(current_directory,'api','Model','Python file for Cartofact data extracting','extracting cartofact attributes.py')
 cartofact_data_extracting_normalized_path <- normalizePath(cartofact_data_extracting_path)
 py_run_file(cartofact_data_extracting_normalized_path)
-attribute_df_path <- file.path(current_directory,'Model','Python file for Cartofact data extracting','attribute_df.csv')
+attribute_df_path <- file.path(current_directory,'api','Model','Python file for Cartofact data extracting','attribute_df.csv')
 attribute_df_normalized_path <- normalizePath(attribute_df_path)
 testdata <- read.csv(attribute_df_normalized_path)
 
@@ -54,7 +55,7 @@ testdata <- read.csv(attribute_df_normalized_path)
 search_id <- c('field_name')
 id <- unique(testdata$field_name)
 id <- data.frame(id = id)
-id_path <- file.path(current_directory,'Model','Python file for Cartofact data extracting','id.xlsx')
+id_path <- file.path(current_directory,'api','Model','Python file for Cartofact data extracting','id.xlsx')
 id_normalized_path <- normalizePath(id_path)
 write_xlsx(id,id_normalized_path)
 
@@ -62,10 +63,10 @@ attribute <- c('field_name','oil_in_place_e3m3')
 table <- c('live_well_ab_st98_field_oil_reserve')
 at_table <- as.data.frame(cbind(attribute,table,search_id))
 write_xlsx(at_table,at_table_normalized_path)
-attributes_other_table_path <- file.path(current_directory,'Model','Python file for Cartofact data extracting','extracting attributes other table.py')
+attributes_other_table_path <- file.path(current_directory,'api','Model','Python file for Cartofact data extracting','extracting attributes other table.py')
 attributes_other_table_normalized_path <- normalizePath(attributes_other_table_path)
 py_run_file(attributes_other_table_normalized_path)
-attribute_ot_path <- file.path(current_directory,'Model','Python file for Cartofact data extracting','attribute_ot.csv')
+attribute_ot_path <- file.path(current_directory,'api','Model','Python file for Cartofact data extracting','attribute_ot.csv')
 attribute_ot_normalized_path <- normalizePath(attribute_ot_path)
 oilinplace <- read.csv(attribute_ot_normalized_path)
 testdata <- merge(testdata,oilinplace,by = 'field_name',all.x = TRUE)
@@ -77,7 +78,14 @@ id <- unique(testdata$uwi_formatted)
 id <- data.frame(id = id)
 write_xlsx(id,id_normalized_path)
 
- 
+attribute <- c('uwi_formatted','casing_size','casing_code')
+table <- c('live_well_ab_casing')
+at_table <- as.data.frame(cbind(attribute,table,search_id))
+write_xlsx(at_table,at_table_normalized_path)
+py_run_file(attributes_other_table_normalized_path)
+casing <- read.csv(attribute_ot_normalized_path)
+casing <- subset(casing, casing_code == 'SURFACE')
+testdata <- merge(testdata, casing, by = 'uwi_formatted', all.x = TRUE)
 
 
 
@@ -346,16 +354,17 @@ colnames(logcate_test2) <- c("LLR.Abandonment.Area","Well.Type.Final")
 ###################################Phase1 Prediction###########################
 #For this part run directly to line 598, then read the commment
 #load data
-excel_folder_path <- file.path(current_directory,'Model','excel data files for R code models')
+excel_folder_path <- file.path(current_directory,'api','Model','excel data files for R code models')
 excel_folder_normalized_path <- normalizePath(excel_folder_path)
 setwd(excel_folder_normalized_path)
-
-environmental_data_path <- file.path(current_directory,'Model','excel data files for R code models','Environmental Data Collection V1_Jul6_clean.csv')
+environmental_data_path <- file.path(current_directory,'api','Model','excel data files for R code models','Environmental Data Collection V1_Jul6_clean.csv')
 environmental_data_normalized_path <- normalizePath(environmental_data_path)
 Data=read.csv(environmental_data_normalized_path, as.is=TRUE, header=TRUE)
 Data <- as.data.frame(Data)
-Sample=read.csv("Phase1 Attributes_MAIN.csv",as.is=TRUE, header=TRUE)
-Sample0=read.csv("Phase1 Attributes_MAIN.csv",as.is=TRUE, header=TRUE)
+Phase1_main_data_path <- file.path(current_directory,'api','Model','excel data files for R code models','Phase1 Attributes_MAIN.csv')
+Phase1_main_data_normalized_path <- normalizePath(Phase1_main_data_path)
+Sample=read.csv(Phase1_main_data_normalized_path,as.is=TRUE, header=TRUE)
+Sample0=read.csv(Phase1_main_data_normalized_path,as.is=TRUE, header=TRUE)
 Sample <- as.data.frame(Sample)
 
 
@@ -474,7 +483,9 @@ uwi <- Data$UWI
 
 #####################################Matching attributes from different sheet
 #sheet GAS FIELD
-gas=read.csv("Phase1 Attributes_GASFIELD.csv",as.is=TRUE, header=TRUE)
+Phase1_gas_data_path <- file.path(current_directory,'api','Model','excel data files for R code models','Phase1 Attributes_GASFIELD.csv')
+Phase1_gas_data_normalized_path <- normalizePath(Phase1_gas_data_path )
+gas=read.csv(Phase1_gas_data_normalized_path,as.is=TRUE, header=TRUE)
 gas <- as.data.frame(gas)
 
 common_col <- intersect(names(Sample),names(gas))
@@ -484,7 +495,9 @@ Sample <- merge(Sample, gas[, c('UWI', unique_col)], by = 'UWI', all.x = TRUE)
 
 
 #sheet CASING('Casing' only taken value of "SURFACE")
-casing=read.csv("Phase1 Attributes_CASING.csv",as.is=TRUE, header=TRUE)
+Phase1_casing_data_path <- file.path(current_directory,'api','Model','excel data files for R code models','Phase1 Attributes_CASING.csv')
+Phase1_casing_data_normalized_path <- normalizePath(Phase1_casing_data_path)
+casing=read.csv(Phase1_casing_data_normalized_path,as.is=TRUE, header=TRUE)
 casing <- as.data.frame(casing)
 casing <- casing[casing$Casing == 'SURFACE',]
 
@@ -495,7 +508,9 @@ Sample <- merge(Sample, casing[, c('UWI', unique_col)], by = 'UWI', all.x = TRUE
 
 
 #sheet CEMENTING(only 750 unique UWI, duplicate UWIs)
-cement=read.csv("Phase1 Attributes_CEMENTING.csv",as.is=TRUE, header=TRUE)
+Phase1_cementing_data_path <- file.path(current_directory,'api','Model','excel data files for R code models','Phase1 Attributes_CEMENTING.csv')
+Phase1_cementing_data_normalized_path <- normalizePath(Phase1_cementing_data_path)
+cement=read.csv(Phase1_cementing_data_normalized_path,as.is=TRUE, header=TRUE)
 cement <- as.data.frame(cement)
 #count cementing times
 cem.table <- as.data.frame(table(cement$UWI))#count cementing times
@@ -523,7 +538,9 @@ Sample$Cement.Amount[Sample$Cement.Amount==0] <- NA
 
 
 #sheet INCIDENTS
-incident=read.csv("Phase1 Attributes_INCIDENTS.csv",as.is=TRUE, header=TRUE)
+Phase1_incidents_data_path <- file.path(current_directory,'api','Model','excel data files for R code models','Phase1 Attributes_INCIDENTS.csv')
+Phase1_incidents_data_normalized_path <- normalizePath(Phase1_incidents_data_path)
+incident=read.csv(Phase1_incidents_data_normalized_path,as.is=TRUE, header=TRUE)
 incident <- as.data.frame(incident)
 
 common_col <- intersect(names(Sample),names(incident))
@@ -536,7 +553,9 @@ Sample$Volume.Released.1[is.na(Sample$Volume.Released.1)] <- 0
 
 
 #sheet OIL FIELD
-oil=read.csv("Phase1 Attributes_OILFIELD.csv")
+Phase1_oilfield_data_path <- file.path(current_directory,'api','Model','excel data files for R code models','Phase1 Attributes_OILFIELD.csv')
+Phase1_oildfield_data_normalized_path <- normalizePath(Phase1_oilfield_data_path )
+oil=read.csv(Phase1_oildfield_data_normalized_path)
 oil <- as.data.frame(oil)
 oil <- oil[,c("UWI","Cumulative.Oil.Production..e3m3.","Initial.Establish.Reserves.Oil.Enhanced..e3m3.","Initial.Establish.Reserves.Oil.Primary..e3m3.","Initial.Establish.Reserves.Oil.Total..e3m3.","Oil.In.Place..e3m3.","Remaining.Established.Oil.Reserves..e3m3.")]
 
@@ -817,7 +836,7 @@ pred.rf<-predict(rf.well.ph1, newdata=logdata)
 # pred.rf<-predict(rf.well, newdata=logdata, type="prob") # if user is caring about the probabilities 
 tab=table(pred.rf,logdata$y)
 
-#randomForest:::varImpPlot(rf.well.ph1)
+randomForest:::varImpPlot(rf.well.ph1)
 
 
 
@@ -889,11 +908,15 @@ ph1_prob <- predict(rf.well.ph1, newdata=logdata_test11, type="prob")
 ###################################Phase2 Prediction###########################
 #For this part run directly to line 1112, then read the commment
 #load data
+excel_folder_path <- file.path(current_directory,'api','Model','excel data files for R code models')
+excel_folder_normalized_path <- normalizePath(excel_folder_path)
 setwd(excel_folder_normalized_path)
 Data=read.csv(environmental_data_normalized_path, as.is=TRUE, header=TRUE)
 Data <- as.data.frame(Data)
-Sample=read.csv("DDP1 Dataset at Aug 10_MAIN.csv",as.is=TRUE, header=TRUE)
-Sample0=read.csv("DDP1 Dataset at Aug 10_MAIN.csv",as.is=TRUE, header=TRUE)
+DDP1_main_data_path <- file.path(current_directory,'api','Model','excel data files for R code models','DDP1 Dataset at Aug 10_MAIN.csv')
+DDP1_main_data_normalized_path <- normalizePath(DDP1_main_data_path)
+Sample=read.csv(DDP1_main_data_normalized_path,as.is=TRUE, header=TRUE)
+Sample0=read.csv(DDP1_main_data_normalized_path,as.is=TRUE, header=TRUE)
 Sample <- as.data.frame(Sample)
 
 
@@ -972,6 +995,8 @@ uwi <- Data$UWI
 
 #####################################Matching attributes from different sheet
 #sheet GAS FIELD
+DDP1_gasfield_data_path <- file.path(current_directory,'api','Model','excel data files for R code models','DDP1 Dataset at Aug 10_GASFIELD.csv')
+DDP1_gasfield_data_normalized_path <- normalizePath(DDP1_gasfield_data_path)
 gas=read.csv("DDP1 Dataset at Aug 10_GASFIELD.csv",as.is=TRUE, header=TRUE)
 gas <- as.data.frame(gas)
 
@@ -982,7 +1007,9 @@ Sample <- merge(Sample, gas[, c('UWI', unique_col)], by = 'UWI', all.x = TRUE)
 
 
 #sheet CASING('Casing' only taken value of "SURFACE")
-casing=read.csv("DDP1 Dataset at Aug 10_CASING.csv",as.is=TRUE, header=TRUE)
+DDP1_casing_data_path <- file.path(current_directory,'api','Model','excel data files for R code models','DDP1 Dataset at Aug 10_CASING.csv')
+DDP1_casing_data_normalized_path <- normalizePath(DDP1_casing_data_path)
+casing=read.csv(DDP1_casing_data_normalized_path,as.is=TRUE, header=TRUE)
 casing <- as.data.frame(casing)
 casing <- casing[casing$Casing == 'SURFACE',]
 
@@ -993,7 +1020,9 @@ Sample <- merge(Sample, casing[, c('UWI', unique_col)], by = 'UWI', all.x = TRUE
 
 
 #sheet CEMENTING(only 750 unique UWI, duplicate UWIs)
-cement=read.csv("DDP1 Dataset at Aug 10_CEMENTING.csv",as.is=TRUE, header=TRUE)
+DDP1_cementing_data_path <- file.path(current_directory,'api','Model','excel data files for R code models','DDP1 Dataset at Aug 10_CEMENTING.csv')
+DDP1_cementing_data_normalized_path <- normalizePath(DDP1_cementing_data_path)
+cement=read.csv(DDP1_cementing_data_normalized_path,as.is=TRUE, header=TRUE)
 cement <- as.data.frame(cement)
 #count cementing times
 cem.table <- as.data.frame(table(cement$UWI))#count cementing times
@@ -1021,7 +1050,9 @@ Sample$Cement.Amount[Sample$Cement.Amount==0] <- NA
 
 
 #sheet INCIDENTS
-incident=read.csv("DDP1 Dataset at Aug 10_INCIDENTS.csv",as.is=TRUE, header=TRUE)
+DDP1_incidents_data_path <- file.path(current_directory,'api','Model','excel data files for R code models','DDP1 Dataset at Aug 10_INCIDENTS.csv')
+DDP1_incidents_data_normalized_path <- normalizePath(DDP1_incidents_data_path)
+incident=read.csv(DDP1_incidents_data_normalized_path,as.is=TRUE, header=TRUE)
 incident <- as.data.frame(incident)
 
 common_col <- intersect(names(Sample),names(incident))
@@ -1034,7 +1065,9 @@ Sample$Volume.Released.1[is.na(Sample$Volume.Released.1)] <- 0
 
 
 #sheet OIL FIELD
-oil=read.csv("DDP1 Dataset at Aug 10_OILFIELD.csv")
+DDP1_oilfield_data_path <- file.path(current_directory,'api','Model','excel data files for R code models','DDP1 Dataset at Aug 10_OILFIELD.csv')
+DDP1_oilfield_data_normalized_path <- normalizePath(DDP1_oilfield_data_path)
+oil=read.csv(DDP1_oilfield_data_normalized_path)
 oil <- as.data.frame(oil)
 oil <- oil[,c("UWI","Cumulative.Oil.Production..e3m3.","Initial.Establish.Reserves.Oil.Enhanced..e3m3.","Initial.Establish.Reserves.Oil.Primary..e3m3.","Initial.Establish.Reserves.Oil.Total..e3m3.","Oil.In.Place..e3m3.","Remaining.Established.Oil.Reserves..e3m3.")]
 
@@ -1399,19 +1432,23 @@ ph2_prob<-predict(rf.well.ph2, newdata=logdata_test22, type="prob")
 
 
 
-
-
 ################################ Remediation value prediction ###############
 # For this chunk, run to the end
 #load data
+excel_folder_path <- file.path(current_directory,'api','Model','excel data files for R code models')
+excel_folder_normalized_path <- normalizePath(excel_folder_path)
 setwd(excel_folder_normalized_path)
 Data=read.csv(environmental_data_normalized_path, as.is=TRUE, header=TRUE)
 Data <- as.data.frame(Data)
-Sample=read.csv("DDP1 Dataset at Aug 10_MAIN.csv",as.is=TRUE, header=TRUE)
+DDP1_main_data_path <- file.path(current_directory,'api','Model','excel data files for R code models','DDP1 Dataset at Aug 10_MAIN.csv')
+DDP1_main_data_normalized_path <- normalizePath(DDP1_main_data_path)
+Sample=read.csv(DDP1_main_data_normalized_path,as.is=TRUE, header=TRUE)
 Sample <- as.data.frame(Sample)
 
 #load combine new data(Leah) 
-RCV_Leah=read.csv("Contamination Volume Data_Leah.csv",as.is=TRUE, header=TRUE)
+DDP1_leah_data_path <- file.path(current_directory,'api','Model','excel data files for R code models','Contamination Volume Data_Leah.csv')
+DDP1_leah_data_normalized_path <- normalizePath(DDP1_leah_data_path)
+RCV_Leah=read.csv(DDP1_leah_data_normalized_path,as.is=TRUE, header=TRUE)
 # remove leading zeros for licence in Leah's 
 remove_leading_zeros <- function(strings) {
   result <- sub("^0+", "", strings)
@@ -1421,29 +1458,40 @@ RCV_Leah$Licence <- remove_leading_zeros(RCV_Leah$Licence)
 
 
 
-
-Sample1=read.csv("Remediation Volume Attributes Sep14_with Well Type_MAIN.csv",as.is=TRUE, header=TRUE)
+remediation_main_data_path <- file.path(current_directory,'api','Model','excel data files for R code models','Remidiation Volume Attributes Sep14.csv')
+remediation_main_data_normalized_path <- normalizePath(remediation_main_data_path)
+Sample1=read.csv(remediation_main_data_normalized_path,as.is=TRUE, header=TRUE)
 Sample <- rbind(Sample,Sample1)
 Sample0 <- Sample
 
-gas=read.csv("DDP1 Dataset at Aug 10_GASFIELD.csv",as.is=TRUE, header=TRUE)
-gas1=read.csv("Remediation Volume Attributes Sep14_with Well Type_GASFIELD.csv",as.is=TRUE, header=TRUE)
+gas=read.csv(DDP1_gasfield_data_normalized_path,as.is=TRUE, header=TRUE)
+remediation_gasfield_data_path <- file.path(current_directory,'api','Model','excel data files for R code models','Remediation Volume Attributes Sep14_with Well Type_GASFIELD.csv')
+remediation_gasfield_data_normalized_path <- normalizePath(remediation_gasfield_data_path)
+gas1=read.csv(remediation_gasfield_data_normalized_path,as.is=TRUE, header=TRUE)
 gas <- rbind(gas,gas1)
 
-casing=read.csv("DDP1 Dataset at Aug 10_CASING.csv",as.is=TRUE, header=TRUE)
-casing1=read.csv("Remediation Volume Attributes Sep14_with Well Type_CASING.csv",as.is=TRUE, header=TRUE)
+casing=read.csv(DDP1_casing_data_normalized_path,as.is=TRUE, header=TRUE)
+remediation_casing_data_path <- file.path(current_directory,'api','Model','excel data files for R code models','Remediation Volume Attributes Sep14_with Well Type_CASING.csv')
+remediation_casing_data_normalized_path <- normalizePath(remediation_casing_data_path)
+casing1=read.csv(remediation_casing_data_normalized_path,as.is=TRUE, header=TRUE)
 casing <- rbind(casing,casing1)
 
-cement=read.csv("DDP1 Dataset at Aug 10_CEMENTING.csv",as.is=TRUE, header=TRUE)
-cement1=read.csv("Remediation Volume Attributes Sep14_with Well Type_CEMENTING.csv",as.is=TRUE, header=TRUE)
+cement=read.csv(DDP1_cementing_data_normalized_path,as.is=TRUE, header=TRUE)
+remediation_cement_data_path <- file.path(current_directory,'api','Model','excel data files for R code models','Remediation Volume Attributes Sep14_with Well Type_CEMENTING.csv')
+remediation_cement_data_normalized_path <- normalizePath(remediation_cement_data_path)
+cement1=read.csv(remediation_cement_data_normalized_path,as.is=TRUE, header=TRUE)
 cement <- rbind(cement,cement1)
 
-incident=read.csv("DDP1 Dataset at Aug 10_INCIDENTS.csv",as.is=TRUE, header=TRUE)
-incident1=read.csv("Remediation Volume Attributes Sep14_with Well Type_INCIDENTS.csv",as.is=TRUE, header=TRUE)
+incident=read.csv(DDP1_incidents_data_normalized_path,as.is=TRUE, header=TRUE)
+remediation_incident_data_path <- file.path(current_directory,'api','Model','excel data files for R code models','Remediation Volume Attributes Sep14_with Well Type_INCIDENTS.csv')
+remediation_incident_data_normalized_path <- normalizePath(remediation_incident_data_path)
+incident1=read.csv(remediation_incident_data_normalized_path,as.is=TRUE, header=TRUE)
 incident <- rbind(incident,incident1)
 
-oil=read.csv("DDP1 Dataset at Aug 10_OILFIELD.csv")
-oil1=read.csv("Remediation Volume Attributes Sep14_with Well Type_OILFIELD.csv")
+oil=read.csv(DDP1_oilfield_data_normalized_path)
+remediation_oilfield_data_path <- file.path(current_directory,'api','Model','excel data files for R code models','Remediation Volume Attributes Sep14_with Well Type_OILFIELD.csv')
+remediation_oilfield_data_normalized_path <- normalizePath(remediation_oilfield_data_path)
+oil1=read.csv(remediation_oilfield_data_normalized_path)
 oil <- rbind(oil,oil1)
 
 ##############################Data file cleaning
@@ -1929,6 +1977,12 @@ colnames(Pred_RV2)=c("Licence", "Remediated Volume (Normal)","Remediated Volume 
 #ph1 ph2
 pred_result <- as.data.frame(cbind(testdata$Licence,ph1_prob[,2],ph2_prob[,2]))
 colnames(pred_result)=c("Licence","ph1_pass_prob", "ph2_pass_prob")
-Final_result<-cbind(pred_result,Pred_RV2[,2:5])
+
+# print(pred_result)
+# Final_result<-cbind(pred_result,Pred_RV2[,2:5])
+
+Final_result<-cbind(pred_result)
+print(Final_result)
 write.csv(Final_result, file = "Final_result.csv", row.names = FALSE)
+
 
