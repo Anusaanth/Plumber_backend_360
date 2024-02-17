@@ -49,7 +49,7 @@ table_name = df['table'].iloc[0]
 query = f"""
 SELECT {', '.join(column_name)}
 FROM {table_name}
-WHERE licence IN %s;"""
+WHERE Licence IN %s;"""
 
 # Establish a connection to the PostgreSQL database
 try:

@@ -810,7 +810,7 @@ for(i in 1:dim(Pred_result_SK_ph2W_P)[1]){
 }
 View(Pred_result_SK_ph2W1.1)
 
-write.csv(Pred_result_SK_ph2W1.1, file = SK_pred_result1.1, row.names = FALSE)
+write.csv(Pred_result_SK_ph2W1.1, file = 'SK_pred_result1.1.csv', row.names = FALSE)
 
 # #Combine results from different province
 # 

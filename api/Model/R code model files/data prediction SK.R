@@ -34,7 +34,7 @@ table <- c('live_well_sk')
 at_table <- as.data.frame(cbind(attribute,table))
 at_table_path <- file.path(current_directory,'api','Model','Python file for Cartofact data extracting','at_table.xlsx')
 at_table_normalized_path <- normalizePath(at_table_path)
-write_xlsx(at_table,at_table,at_table_normalized_path)
+write_xlsx(at_table,at_table_normalized_path)
 
 
 #Obtain the attributes

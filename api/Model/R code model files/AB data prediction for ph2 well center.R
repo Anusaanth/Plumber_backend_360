@@ -75,7 +75,7 @@ testdata <- merge(testdata,remainenergy,by = 'field_name',all.x = TRUE)
 attribute <- c('field_name','oil_in_place_e3m3')
 table <- c('live_well_ab_st98_field_oil_reserve')
 at_table <- as.data.frame(cbind(attribute,table,search_id))
-write_xlsx(at_table,at_table_normalized_pat)
+write_xlsx(at_table,at_table_normalized_path)
 attributes_other_table_path <- file.path(current_directory,'api','Model','Python file for Cartofact data extracting','extracting attributes other table.py')
 attributes_other_table_normalized_path <- normalizePath(attributes_other_table_path)
 py_run_file(attributes_other_table_normalized_path)
@@ -836,7 +836,7 @@ pfw_prob <- predict(rf.well, newdata=logdata_test11, type="prob")
 Pred_result<-cbind(testdata$Licence,testdata$UWI,pfw_prob[,2])
 colnames(Pred_result)=c("Licence","UWI","Well.Center.Pass.Probability")
 
-View(Pred_result)
+# View(Pred_result)
 
 AB_pred_result_P <- as.data.frame(Pred_result)
 
@@ -853,8 +853,8 @@ for(i in 1:dim(AB_pred_result_P)[1]){
 }
 
 
-View(AB_pred_result1.1)
-write.csv(AB_pred_result1.1, file = AB_pred_result1.1, row.names = FALSE)
+# View(AB_pred_result1.1)
+write.csv(AB_pred_result1.1, file = "AB_pred_result1.1.csv", row.names = FALSE)
 
 
 # #Combine results
